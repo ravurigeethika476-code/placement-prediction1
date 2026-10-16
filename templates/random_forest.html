@@ -1,0 +1,372 @@
+{% extends "base.html" %}
+
+{% block title %}
+Random Forest
+{% endblock %}
+
+
+{% block content %}
+
+<h1>Random Forest</h1>
+
+<p>
+    <b>Dataset:</b> {{ filename }}
+</p>
+
+<hr>
+
+
+<!-- =====================================================
+     SELECT FEATURES
+===================================================== -->
+
+<h2>1. Select Required Columns</h2>
+
+<p>
+    Select the input features (X):
+</p>
+
+
+<form method="POST">
+
+
+    {% for column in columns %}
+
+    <label>
+
+        <input
+            type="checkbox"
+            name="features"
+            value="{{ column }}"
+        >
+
+        {{ column }}
+
+    </label>
+
+    <br>
+
+    {% endfor %}
+
+
+    <br>
+
+
+    <!-- =================================================
+         TARGET
+    ================================================== -->
+
+    <h2>2. Select Target Column</h2>
+
+    <p>
+        Select the output/classification column (Y):
+    </p>
+
+
+    <select
+        name="target"
+        required
+    >
+
+        <option value="">
+            -- Select Target Column --
+        </option>
+
+
+        {% for column in columns %}
+
+        <option value="{{ column }}">
+
+            {{ column }}
+
+        </option>
+
+        {% endfor %}
+
+    </select>
+
+
+    <br><br>
+
+
+    <button type="submit">
+        Train Random Forest
+    </button>
+
+
+</form>
+
+
+<!-- =====================================================
+     ERROR
+===================================================== -->
+
+{% if error %}
+
+<hr>
+
+<div class="error">
+
+    <b>Error:</b>
+
+    {{ error }}
+
+</div>
+
+{% endif %}
+
+
+<!-- =====================================================
+     RESULTS
+===================================================== -->
+
+{% if results %}
+
+<hr>
+
+<div class="result">
+
+    <h2>Random Forest Results</h2>
+
+
+    <h3>Selected Features</h3>
+
+    <ul>
+
+        {% for feature in results.features %}
+
+        <li>
+            {{ feature }}
+        </li>
+
+        {% endfor %}
+
+    </ul>
+
+
+    <p>
+
+        <b>Target Variable:</b>
+
+        {{ results.target }}
+
+    </p>
+
+
+    <!-- DATA SPLIT -->
+
+    <h3>Dataset Split</h3>
+
+    <table>
+
+        <tr>
+
+            <th>
+                Training Samples
+            </th>
+
+            <td>
+                {{ results.train_rows }}
+            </td>
+
+        </tr>
+
+
+        <tr>
+
+            <th>
+                Testing Samples
+            </th>
+
+            <td>
+                {{ results.test_rows }}
+            </td>
+
+        </tr>
+
+    </table>
+
+
+    <!-- METRICS -->
+
+    <h3>Model Performance</h3>
+
+    <table>
+
+        <tr>
+
+            <th>
+                Metric
+            </th>
+
+            <th>
+                Value
+            </th>
+
+        </tr>
+
+
+        <tr>
+
+            <td>
+                Accuracy
+            </td>
+
+            <td>
+                {{ results.accuracy }}
+            </td>
+
+        </tr>
+
+
+        <tr>
+
+            <td>
+                Precision
+            </td>
+
+            <td>
+                {{ results.precision }}
+            </td>
+
+        </tr>
+
+
+        <tr>
+
+            <td>
+                Recall
+            </td>
+
+            <td>
+                {{ results.recall }}
+            </td>
+
+        </tr>
+
+
+        <tr>
+
+            <td>
+                F1 Score
+            </td>
+
+            <td>
+                {{ results.f1 }}
+            </td>
+
+        </tr>
+
+    </table>
+
+
+    <!-- FEATURE IMPORTANCE -->
+
+    <h3>Feature Importance</h3>
+
+    <table>
+
+        <tr>
+
+            <th>
+                Feature
+            </th>
+
+            <th>
+                Importance
+            </th>
+
+        </tr>
+
+
+        {% for feature, importance
+           in results.feature_importance.items() %}
+
+        <tr>
+
+            <td>
+                {{ feature }}
+            </td>
+
+            <td>
+                {{ importance }}
+            </td>
+
+        </tr>
+
+        {% endfor %}
+
+    </table>
+
+
+    <!-- PREDICTIONS -->
+
+    <h3>Predictions</h3>
+
+    <table>
+
+        <tr>
+
+            <th>
+                Actual
+            </th>
+
+            <th>
+                Predicted
+            </th>
+
+        </tr>
+
+
+        {% for i in range(results.actual|length) %}
+
+            {% if i < 10 %}
+
+            <tr>
+
+                <td>
+                    {{ results.actual[i] }}
+                </td>
+
+                <td>
+                    {{ results.predictions[i] }}
+                </td>
+
+            </tr>
+
+            {% endif %}
+
+        {% endfor %}
+
+    </table>
+
+
+    <!-- CONFUSION MATRIX -->
+
+    <h3>Confusion Matrix</h3>
+
+    <table>
+
+        {% for row in results.confusion_matrix %}
+
+        <tr>
+
+            {% for value in row %}
+
+            <td>
+                {{ value }}
+            </td>
+
+            {% endfor %}
+
+        </tr>
+
+        {% endfor %}
+
+    </table>
+
+</div>
+
+{% endif %}
+
+{% endblock %}

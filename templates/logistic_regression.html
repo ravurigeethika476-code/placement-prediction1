@@ -1,0 +1,228 @@
+{% extends "base.html" %}
+
+{% block title %}
+Logistic Regression
+{% endblock %}
+
+{% block content %}
+
+<h1>Logistic Regression</h1>
+
+<p>
+    <b>Dataset:</b> {{ filename }}
+</p>
+
+<hr>
+
+<h2>1. Select Required Columns</h2>
+
+<form method="POST">
+
+<p>
+    Select the input features (X):
+</p>
+
+
+{% for column in columns %}
+
+<label>
+
+    <input
+        type="checkbox"
+        name="features"
+        value="{{ column }}"
+    >
+
+    {{ column }}
+
+</label>
+
+<br>
+
+{% endfor %}
+
+
+<br>
+
+
+<h2>2. Select Target Column</h2>
+
+
+<select
+    name="target"
+    required
+>
+
+    <option value="">
+        -- Select Target --
+    </option>
+
+
+    {% for column in columns %}
+
+    <option value="{{ column }}">
+
+        {{ column }}
+
+    </option>
+
+    {% endfor %}
+
+</select>
+
+
+<br><br>
+
+
+<button type="submit">
+
+    Train Logistic Regression
+
+</button>
+
+
+</form>
+
+{% if error %}
+
+<hr>
+
+<p style="color:red;">
+
+<b>Error:</b>
+{{ error }}
+
+</p>
+
+{% endif %}
+
+{% if results %}
+
+<hr>
+
+<h2>Logistic Regression Results</h2>
+
+<h3>Selected Features</h3>
+
+<ul>
+
+{% for feature in results.features %}
+
+<li>
+    {{ feature }}
+</li>
+
+{% endfor %}
+
+</ul>
+
+<p>
+    <b>Target:</b>
+    {{ results.target }}
+</p>
+
+<h3>Dataset Split</h3>
+
+<table border="1" cellpadding="8">
+
+<tr>
+
+    <th>
+        Training Samples
+    </th>
+
+    <td>
+        {{ results.train_rows }}
+    </td>
+
+</tr>
+
+
+<tr>
+
+    <th>
+        Testing Samples
+    </th>
+
+    <td>
+        {{ results.test_rows }}
+    </td>
+
+</tr>
+
+</table>
+
+<h3>Evaluation Metrics</h3>
+
+<table border="1" cellpadding="10">
+
+<tr>
+
+    <th>
+        Metric
+    </th>
+
+    <th>
+        Value
+    </th>
+
+</tr>
+
+
+<tr>
+
+    <td>
+        Accuracy
+    </td>
+
+    <td>
+        {{ results.accuracy }}
+    </td>
+
+</tr>
+
+
+<tr>
+
+    <td>
+        Precision
+    </td>
+
+    <td>
+        {{ results.precision }}
+    </td>
+
+</tr>
+
+
+<tr>
+
+    <td>
+        Recall
+    </td>
+
+    <td>
+        {{ results.recall }}
+    </td>
+
+</tr>
+
+
+<tr>
+
+    <td>
+        F1 Score
+    </td>
+
+    <td>
+        {{ results.f1 }}
+    </td>
+
+</tr>
+
+
+</table>
+
+{% endif %}
+
+{% endblock %}

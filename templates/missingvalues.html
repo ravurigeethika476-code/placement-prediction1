@@ -1,0 +1,208 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container">
+
+    <h1>Missing Values Summary</h1>
+
+    <p>
+        This table shows the missing values present in your dataset.
+    </p>
+
+
+    {% if message %}
+
+    <div class="alert alert-success">
+        {{ message }}
+    </div>
+
+    {% endif %}
+
+
+    <!-- ========================================== -->
+    <!-- MISSING VALUES SUMMARY -->
+    <!-- ========================================== -->
+
+    <h3>Dataset Missing Values</h3>
+
+    <div style="overflow-x:auto;">
+
+        <table class="table table-bordered table-striped">
+
+            <thead>
+
+                <tr>
+                    <th>Column</th>
+                    <th>Data Type</th>
+                    <th>Missing Values</th>
+                    <th>Missing %</th>
+                    <th>Status</th>
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+                {% for row in missing_values %}
+
+                <tr>
+
+                    <td>
+                        {{ row["Column"] }}
+                    </td>
+
+                    <td>
+                        {{ row["Data Type"] }}
+                    </td>
+
+                    <td>
+                        {{ row["Missing Values"] }}
+                    </td>
+
+                    <td>
+                        {{ row["Missing Percentage"] }}%
+                    </td>
+
+                    <td>
+
+                        {% if row["Missing Values"] > 0 %}
+
+                        <span style="color:red;">
+                            Missing
+                        </span>
+
+                        {% else %}
+
+                        <span style="color:green;">
+                            No Missing
+                        </span>
+
+                        {% endif %}
+
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+
+    <!-- ========================================== -->
+    <!-- HANDLE MISSING VALUES -->
+    <!-- ========================================== -->
+
+    <h3 style="margin-top:30px;">
+        Handle Missing Values
+    </h3>
+
+    <form method="POST">
+
+        <label>
+            Select Column:
+        </label>
+
+        <br>
+
+        <select name="column" required>
+
+            {% for column in columns %}
+
+            <option value="{{ column }}">
+                {{ column }}
+            </option>
+
+            {% endfor %}
+
+        </select>
+
+
+        <br><br>
+
+
+        <label>
+            Select Method:
+        </label>
+
+        <br>
+
+        <select name="method" required>
+
+            <option value="mean">
+                Mean
+            </option>
+
+            <option value="median">
+                Median
+            </option>
+
+            <option value="mode">
+                Mode
+            </option>
+
+            <option value="zero">
+                Fill with 0
+            </option>
+
+            <option value="ffill">
+                Forward Fill
+            </option>
+
+            <option value="bfill">
+                Backward Fill
+            </option>
+
+            <option value="drop">
+                Drop Rows
+            </option>
+
+        </select>
+
+
+        <br><br>
+
+
+        <button type="submit">
+            Handle Missing Values
+        </button>
+
+    </form>
+
+
+    <!-- ========================================== -->
+    <!-- GO TO ENCODING -->
+    <!-- ========================================== -->
+
+    {% if no_missing %}
+
+    <div style="margin-top:30px;">
+
+        <h3>
+            Missing Values Completed ✓
+        </h3>
+
+        <p>
+            All missing values have been handled.
+            You can now continue with categorical encoding.
+        </p>
+
+        <a href="/encoding">
+
+            <button type="button">
+                Continue to Encoding →
+            </button>
+
+        </a>
+
+    </div>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}

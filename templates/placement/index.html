@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+
+{% block title %}
+Student Placement MLOps
+{% endblock %}
+
+{% block content %}
+<div class="container placement-page-container">
+    <div class="placement-header-hero">
+        <div class="placement-hero-badge">MLOps Production System</div>
+        <h1>Student Placement MLOps</h1>
+        <p class="placement-hero-sub">Train, predict and monitor the Student Placement model with automated data drift tracking and inference serving.</p>
+    </div>
+
+    {% if error %}
+        <div class="alert alert-danger">{{ error }}</div>
+    {% endif %}
+
+    <!-- Operational KPI Metric Cards -->
+    {% if artifact %}
+    <div class="placement-kpi-grid">
+        <div class="placement-kpi-card">
+            <span class="kpi-label">Model Pipeline</span>
+            <span class="kpi-value">Random Forest</span>
+            <span class="kpi-sub">100 Estimators • Multi-core</span>
+        </div>
+        <div class="placement-kpi-card">
+            <span class="kpi-label">Model Version</span>
+            <span class="kpi-value">v{{ artifact.version }}</span>
+            <span class="kpi-sub">Production Artifact Loaded</span>
+        </div>
+        <div class="placement-kpi-card">
+            <span class="kpi-label">Features Tracked</span>
+            <span class="kpi-value">{{ artifact.features|length }}</span>
+            <span class="kpi-sub">{{ artifact.numeric_features|length }} Numeric • {{ artifact.categorical_features|length }} Categorical</span>
+        </div>
+        <div class="placement-kpi-card">
+            <span class="kpi-label">Target Variable</span>
+            <span class="kpi-value">{{ artifact.target_column }}</span>
+            <span class="kpi-sub">Classes: {{ artifact.target_classes|join(', ') }}</span>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Main Navigation Action Cards -->
+    <div class="placement-grid">
+        <a class="placement-card" href="{{ url_for('placement.predict') }}">
+            <div class="card-icon-wrapper">🎯</div>
+            <h2>Predict Placement</h2>
+            <p>Generate a student prediction with real-time class probability and confidence assessment based on academic, coding, and interview profile.</p>
+            <span class="card-action-link">Open Inference Engine &rarr;</span>
+        </a>
+
+        <a class="placement-card" href="{{ url_for('placement.monitoring') }}">
+            <div class="card-icon-wrapper">📊</div>
+            <h2>Drift Monitoring</h2>
+            <p>Calculate PSI (Population Stability Index) for current student data to detect feature distribution shifts against the training baseline.</p>
+            <span class="card-action-link">Launch Drift Monitor &rarr;</span>
+        </a>
+
+        <a class="placement-card" href="{{ url_for('placement.model_info') }}">
+            <div class="card-icon-wrapper">⚙️</div>
+            <h2>Model Information</h2>
+            <p>View model version, preprocessing pipelines, numeric & categorical features, transformer specifications, and retrain controls.</p>
+            <span class="card-action-link">Inspect Architecture &rarr;</span>
+        </a>
+    </div>
+
+    <!-- MLOps Pipeline Workflow Diagram -->
+    <div class="mlops-pipeline-card">
+        <h3>End-to-End MLOps Pipeline Architecture</h3>
+        <p>The placement model operates on an automated scikit-learn ColumnTransformer pipeline designed for zero-leakage inference and continuous monitoring:</p>
+        
+        <div class="pipeline-flow-steps">
+            <div class="pipeline-step">
+                <div class="step-num">1</div>
+                <div class="step-content">
+                    <strong>Input Ingestion</strong>
+                    <span>23 Academic &amp; Skill Features</span>
+                </div>
+            </div>
+            <div class="step-arrow">&rarr;</div>
+            <div class="pipeline-step">
+                <div class="step-num">2</div>
+                <div class="step-content">
+                    <strong>Data Imputation</strong>
+                    <span>Median (Num) &amp; Mode (Cat)</span>
+                </div>
+            </div>
+            <div class="step-arrow">&rarr;</div>
+            <div class="pipeline-step">
+                <div class="step-num">3</div>
+                <div class="step-content">
+                    <strong>Transformation</strong>
+                    <span>StandardScaler &amp; OneHotEncoder</span>
+                </div>
+            </div>
+            <div class="step-arrow">&rarr;</div>
+            <div class="pipeline-step">
+                <div class="step-num">4</div>
+                <div class="step-content">
+                    <strong>Classification</strong>
+                    <span>Random Forest Ensemble</span>
+                </div>
+            </div>
+            <div class="step-arrow">&rarr;</div>
+            <div class="pipeline-step highlight">
+                <div class="step-num">5</div>
+                <div class="step-content">
+                    <strong>PSI Drift Monitor</strong>
+                    <span>Continuous Population Audit</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if artifact %}
+    <!-- Model Artifact Detail Panel -->
+    <div class="placement-panel">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+            <div>
+                <h4 style="margin: 0 0 8px 0; color: #7d0d2d; font-size: 18px;">Active Model Artifact Status</h4>
+                <p><b>Version:</b> {{ artifact.version }}</p>
+                <p><b>Target:</b> {{ artifact.target_column }}</p>
+                <p><b>Features:</b> {{ artifact.features|length }} ({{ artifact.numeric_features|length }} numeric, {{ artifact.categorical_features|length }} categorical)</p>
+            </div>
+            <div>
+                <form method="POST" action="{{ url_for('placement.retrain') }}" style="margin: 0;">
+                    <button type="submit" class="btn-retrain-action" onclick="return confirm('Retrain placement model and update reference baseline?');">
+                        🔄 Retrain Model &amp; Update Baseline
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

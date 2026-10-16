@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+
+{% block title %}
+Principal Component Analysis (PCA)
+{% endblock %}
+
+{% block content %}
+
+<h1>Principal Component Analysis (PCA)</h1>
+
+<p>
+    <b>Dataset:</b> {{ filename }}
+</p>
+
+<p style="color: #64748b; margin-bottom: 20px;">
+    Principal Component Analysis is an unsupervised linear dimensionality reduction technique that transforms correlated student performance metrics into orthogonal, uncorrelated principal components while maximizing explained variance.
+</p>
+
+<hr>
+
+<h2>1. Configure PCA Projection</h2>
+
+<form method="POST">
+    <p><b>Select Numerical Input Features:</b></p>
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 8px; margin-bottom: 20px;">
+        {% for column in columns %}
+        <label style="display: flex; align-items: center; gap: 8px;">
+            <input type="checkbox" name="features" value="{{ column }}"
+                {% if results and column in results.features %}checked{% elif not results and column in ['cgpa', 'coding_skill_score', 'aptitude_score', 'communication_skill_score', 'internships_count', 'projects_count', 'backlogs', 'mock_interview_score', 'logical_reasoning_score', 'study_hours_per_day'] %}checked{% endif %}>
+            {{ column }}
+        </label>
+        {% endfor %}
+    </div>
+
+    <div style="display: flex; gap: 30px; flex-wrap: wrap; margin-bottom: 25px;">
+        <div>
+            <label><b>Target Column (for Color Coding):</b></label><br>
+            <select name="target" style="padding: 8px 12px; border-radius: 6px; border: 1px solid #ccc; margin-top: 5px;">
+                <option value="">None (Unlabeled)</option>
+                {% for column in columns %}
+                <option value="{{ column }}" {% if (results and column == results.target) or (not results and column == 'placement_status') %}selected{% endif %}>
+                    {{ column }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div>
+            <label><b>Number of Principal Components:</b></label><br>
+            <select name="n_components" style="padding: 8px 12px; border-radius: 6px; border: 1px solid #ccc; margin-top: 5px;">
+                <option value="2" selected>2 Components (2D Plane)</option>
+                <option value="3">3 Components (3D Volume)</option>
+            </select>
+        </div>
+    </div>
+
+    <button type="submit" style="padding: 10px 24px; background: #b5123f; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;">
+        Perform PCA Dimensionality Reduction
+    </button>
+</form>
+
+{% if error %}
+<hr>
+<div style="padding: 12px; background: #fee2e2; color: #b91c1c; border-radius: 6px; margin-top: 15px;">
+    <b>Error:</b> {{ error }}
+</div>
+{% endif %}
+
+{% if results %}
+<hr>
+
+<h2>PCA Reduction Results</h2>
+
+<!-- Metric Cards -->
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin: 20px 0;">
+    <div style="background: white; border: 1px solid #fecdd3; border-radius: 8px; padding: 15px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.04);">
+        <div style="color: #881337; font-size: 13px; font-weight: 600; text-transform: uppercase;">PC1 Explained Variance</div>
+        <div style="font-size: 26px; font-weight: bold; color: #b5123f; margin-top: 5px;">{{ (results.explained_variance_ratio[0] * 100)|round(2) }}%</div>
+    </div>
+    {% if results.explained_variance_ratio|length > 1 %}
+    <div style="background: white; border: 1px solid #fecdd3; border-radius: 8px; padding: 15px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.04);">
+        <div style="color: #881337; font-size: 13px; font-weight: 600; text-transform: uppercase;">PC2 Explained Variance</div>
+        <div style="font-size: 26px; font-weight: bold; color: #b5123f; margin-top: 5px;">{{ (results.explained_variance_ratio[1] * 100)|round(2) }}%</div>
+    </div>
+    {% endif %}
+    <div style="background: white; border: 1px solid #fecdd3; border-radius: 8px; padding: 15px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.04);">
+        <div style="color: #881337; font-size: 13px; font-weight: 600; text-transform: uppercase;">Total Retained Variance</div>
+        <div style="font-size: 26px; font-weight: bold; color: #b5123f; margin-top: 5px;">{{ (results.total_variance * 100)|round(2) }}%</div>
+    </div>
+    <div style="background: white; border: 1px solid #fecdd3; border-radius: 8px; padding: 15px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.04);">
+        <div style="color: #881337; font-size: 13px; font-weight: 600; text-transform: uppercase;">Original Dimension</div>
+        <div style="font-size: 26px; font-weight: bold; color: #421622; margin-top: 5px;">{{ results.features|length }} Features</div>
+    </div>
+</div>
+
+<!-- Visualizations -->
+{% if plot_base64 %}
+<div style="background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; margin-bottom: 25px; box-shadow: 0 2px 6px rgba(0,0,0,0.04);">
+    <h3 style="margin-top: 0; color: #421622;">PCA Scree Plot &amp; 2D Manifold Projection</h3>
+    <div style="text-align: center;">
+        <img src="data:image/png;base64,{{ plot_base64 }}" alt="PCA Visualizations" style="max-width: 100%; height: auto; border-radius: 6px;">
+    </div>
+</div>
+{% endif %}
+
+<!-- Loadings Table -->
+<div style="margin-top: 25px;">
+    <h3>Component Loadings (Eigenvector Weights)</h3>
+    <p style="color: #64748b; font-size: 14px;">Higher magnitude loadings indicate features that drive principal variations across student placement potential.</p>
+    <div style="overflow-x: auto;">
+        <table border="1" cellpadding="8" style="width: 100%; border-collapse: collapse; border-color: #f1f5f9;">
+            <tr style="background: #fdf2f4;">
+                <th style="text-align: left;">Feature</th>
+                <th style="text-align: right;">PC1 Weight</th>
+                <th style="text-align: right;">PC2 Weight</th>
+            </tr>
+            {% for feat in results.features %}
+            <tr>
+                <td style="font-weight: 500;">{{ feat }}</td>
+                <td style="text-align: right; font-family: monospace;">{{ results.loadings_pc1.get(feat, 0)|round(4) }}</td>
+                <td style="text-align: right; font-family: monospace;">{{ results.loadings_pc2.get(feat, 0)|round(4) }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+</div>
+
+{% endif %}
+
+{% endblock %}

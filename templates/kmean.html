@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+
+{% block title %}
+K-Means Clustering
+{% endblock %}
+
+{% block content %}
+<div class="summary-page">
+    <h1>K-Means Clustering Pipeline</h1>
+    <p>Segment students into distinct behavioral and skill clusters using Unsupervised K-Means Clustering based on <strong>CGPA</strong>, <strong>Aptitude Score</strong>, and <strong>Coding Score</strong>.</p>
+
+    {% if error %}
+        <div style="background-color: #f8d7da; color: #721c24; padding: 12px; border-radius: 6px; border: 1px solid #f5c6cb; margin-bottom: 20px;">
+            <strong>Error:</strong> {{ error }}
+        </div>
+    {% endif %}
+
+    <!-- Section 1: Configure & Train Model -->
+    <div style="background: white; border: 1px solid #e1e8ed; padding: 20px; border-radius: 8px; margin-bottom: 25px;">
+        <h2 style="margin-top: 0; color: #20577d;">1. Configure & Train K-Means Model</h2>
+        <form method="POST" action="{{ url_for('k_means_page') }}">
+            <div style="display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 15px; align-items: flex-end;">
+                <div>
+                    <label style="display: block; font-weight: 600; color: #20577d; margin-bottom: 5px;">Select Number of Clusters (K):</label>
+                    <select name="n_clusters" style="padding: 8px; border: 1px solid #cbd5dc; border-radius: 6px; width: 220px;" required>
+                        {% for k in [2, 3, 4, 5, 6] %}
+                            <option value="{{ k }}" {% if selected_k == k %}selected{% elif not selected_k and k == 3 %}selected{% endif %}>K = {{ k }} Clusters</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div style="color: #64748b; font-size: 14px; padding-bottom: 8px;">
+                    Features automatically utilized: <strong>CGPA</strong>, <strong>Aptitude Score</strong>, <strong>Coding Score</strong>
+                </div>
+            </div>
+
+            <button type="submit" style="padding: 10px 20px; background: #20577d; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;">
+                Train & Evaluate Clusters
+            </button>
+        </form>
+    </div>
+
+    {% if trained %}
+        <!-- Section 2: Model Summary & Evaluation -->
+        <div style="background: white; border: 1px solid #e1e8ed; padding: 20px; border-radius: 8px; margin-bottom: 25px;">
+            <h2 style="margin-top: 0; color: #20577d;">2. Cluster Summary & Performance Metrics</h2>
+            <p>Clustering model evaluated on <b>{{ n_samples }}</b> total student records with <b>K = {{ selected_k }}</b> clusters.</p>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-bottom: 20px;">
+                <div style="padding: 15px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px;">
+                    <span style="color: #64748b; font-size: 13px; font-weight: 600; text-transform: uppercase;">Inertia (WCSS)</span>
+                    <h3 style="margin: 5px 0 0 0; color: #20577d; font-size: 20px;">{{ "%.2f"|format(metrics.inertia) }}</h3>
+                    <small style="color: #64748b;">Within-cluster sum of squared distances</small>
+                </div>
+                <div style="padding: 15px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px;">
+                    <span style="color: #64748b; font-size: 13px; font-weight: 600; text-transform: uppercase;">Silhouette Score</span>
+                    <h3 style="margin: 5px 0 0 0; color: #20577d; font-size: 20px;">{{ "%.4f"|format(metrics.silhouette) }}</h3>
+                    <small style="color: #64748b;">Cluster separation & cohesion metric</small>
+                </div>
+            </div>
+
+            <h4 style="color: #20577d; margin-top: 15px; margin-bottom: 10px;">Cluster Centers & Distribution Breakdown</h4>
+            <table class="table table-bordered" style="width: 100%; margin-bottom: 25px;">
+                <thead>
+                    <tr style="background: #20577d; color: white;">
+                        <th style="padding: 8px;">Cluster ID</th>
+                        <th style="padding: 8px;">Profile / Category</th>
+                        <th style="padding: 8px; text-align: right;">Student Count</th>
+                        <th style="padding: 8px; text-align: right;">Share (%)</th>
+                        <th style="padding: 8px; text-align: right;">Mean CGPA</th>
+                        <th style="padding: 8px; text-align: right;">Mean Aptitude</th>
+                        <th style="padding: 8px; text-align: right;">Mean Coding</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for c in metrics.cluster_summary %}
+                        <tr>
+                            <td style="padding: 8px; font-weight: bold;">Cluster {{ c.cluster_id }}</td>
+                            <td style="padding: 8px;">
+                                <span style="display: inline-block; padding: 3px 8px; border-radius: 4px; background: {{ c.color }}15; color: {{ c.color }}; font-weight: 600;">
+                                    {{ c.profile }}
+                                </span>
+                            </td>
+                            <td style="padding: 8px; text-align: right;">{{ c.count }}</td>
+                            <td style="padding: 8px; text-align: right;">{{ c.percentage }}%</td>
+                            <td style="padding: 8px; text-align: right; font-weight: 600;">{{ c.mean_cgpa }}</td>
+                            <td style="padding: 8px; text-align: right; font-weight: 600;">{{ c.mean_aptitude }}</td>
+                            <td style="padding: 8px; text-align: right; font-weight: 600;">{{ c.mean_coding }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            {% if plot_base64 %}
+                <h4 style="color: #20577d; margin-top: 20px; margin-bottom: 10px;">Cluster Visualization (2D Scatter Plot)</h4>
+                <div style="text-align: center; margin-top: 10px; background: #fafbfc; padding: 15px; border-radius: 8px; border: 1px solid #e1e8ed;">
+                    <img src="data:image/png;base64,{{ plot_base64 }}" alt="K-Means Cluster Scatter Plot" style="max-width: 100%; height: auto; border-radius: 6px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Section 3: Predict Student Cluster -->
+        <div style="background: white; border: 1px solid #e1e8ed; padding: 20px; border-radius: 8px; margin-bottom: 25px;">
+            <h2 style="margin-top: 0; color: #20577d;">3. Predict Student Cluster</h2>
+            <form method="POST" action="{{ url_for('k_means_page') }}">
+                <input type="hidden" name="predict_action" value="1">
+                <div style="display: flex; gap: 15px; align-items: flex-end; flex-wrap: wrap;">
+                    <div>
+                        <label style="display: block; font-weight: 600; color: #20577d; margin-bottom: 5px;">
+                            Enter Student's CGPA:
+                        </label>
+                        <input type="number" step="0.01" min="0" max="10" name="predict_cgpa" placeholder="e.g. 8.5" value="{% if predict_cgpa_val is not none %}{{ predict_cgpa_val }}{% endif %}" style="padding: 8px; border: 1px solid #cbd5dc; border-radius: 6px; width: 180px;" required>
+                    </div>
+
+                    <div>
+                        <label style="display: block; font-weight: 600; color: #20577d; margin-bottom: 5px;">
+                            Enter Aptitude Score:
+                        </label>
+                        <input type="number" step="1" min="0" max="100" name="predict_aptitude" placeholder="e.g. 75" value="{% if predict_aptitude_val is not none %}{{ predict_aptitude_val }}{% endif %}" style="padding: 8px; border: 1px solid #cbd5dc; border-radius: 6px; width: 180px;" required>
+                    </div>
+
+                    <div>
+                        <label style="display: block; font-weight: 600; color: #20577d; margin-bottom: 5px;">
+                            Enter Coding Score:
+                        </label>
+                        <input type="number" step="1" min="0" max="100" name="predict_coding" placeholder="e.g. 80" value="{% if predict_coding_val is not none %}{{ predict_coding_val }}{% endif %}" style="padding: 8px; border: 1px solid #cbd5dc; border-radius: 6px; width: 180px;" required>
+                    </div>
+
+                    <button type="submit" style="padding: 10px 20px; background: #28a745; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;">
+                        Predict Cluster
+                    </button>
+                </div>
+            </form>
+
+            {% if prediction_cluster is not none %}
+                <div style="margin-top: 20px; padding: 18px; background: #e8f5e9; border: 1px solid #c8e6c9; border-radius: 6px; color: #2e7d32; font-size: 16px;">
+                    <div>
+                        Input Values: <strong>CGPA = {{ predict_cgpa_val }}</strong>, <strong>Aptitude = {{ predict_aptitude_val }}</strong>, <strong>Coding = {{ predict_coding_val }}</strong>
+                    </div>
+                    <div style="margin-top: 10px; font-size: 19px; font-weight: bold;">
+                        Assigned Cluster:
+                        <span style="display: inline-block; padding: 4px 12px; background: #2e7d32; color: white; border-radius: 20px; font-size: 16px; margin-left: 8px;">
+                            Cluster {{ prediction_cluster }}
+                        </span>
+                        {% if prediction_profile %}
+                            <span style="font-size: 16px; font-weight: normal; margin-left: 10px; color: #1b5e20;">
+                                ({{ prediction_profile }})
+                            </span>
+                        {% endif %}
+                    </div>
+                    <div style="margin-top: 6px; font-size: 14px; color: #388e3c;">
+                        Distance to Cluster Centroid: <strong>{{ prediction_dist }}</strong>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

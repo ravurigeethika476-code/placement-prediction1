@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block title %}
+Data Visualization
+{% endblock %}
+
+{% block content %}
+<div class="summary-page" style="padding: 20px; max-width: 1000px; margin: 0 auto;">
+    <h1 style="color: #20577d; margin-bottom: 8px;">Exploratory Data Visualizations</h1>
+    <p style="color: #64748b; margin-bottom: 25px;">Visual insights and distributions generated dynamically from your active student placement dataset.</p>
+
+    <!-- 1. Bar Graph -->
+    <div style="background: white; border: 1px solid #e1e8ed; padding: 22px; border-radius: 8px; margin-bottom: 25px; box-shadow: 0 2px 6px rgba(0,0,0,0.04);">
+        <h2 style="margin-top: 0; color: #20577d; font-size: 19px; border-bottom: 2px solid #eef2f5; padding-bottom: 10px;">
+            1. Categorical Distribution (Bar Graph)
+        </h2>
+        {% if bar_graph %}
+            <div style="text-align: center; margin-top: 15px;">
+                <img src="data:image/png;base64,{{ bar_graph }}" alt="Categorical Bar Graph" style="max-width: 100%; height: auto; border-radius: 6px; box-shadow: 0 1px 4px rgba(0,0,0,0.08);">
+            </div>
+        {% else %}
+            <p style="color: #888; font-style: italic;">No categorical columns available to plot bar chart.</p>
+        {% endif %}
+    </div>
+
+    <!-- 2. Histogram -->
+    <div style="background: white; border: 1px solid #e1e8ed; padding: 22px; border-radius: 8px; margin-bottom: 25px; box-shadow: 0 2px 6px rgba(0,0,0,0.04);">
+        <h2 style="margin-top: 0; color: #20577d; font-size: 19px; border-bottom: 2px solid #eef2f5; padding-bottom: 10px;">
+            2. Numerical Distribution (Histogram)
+        </h2>
+        {% if hist_graph %}
+            <div style="text-align: center; margin-top: 15px;">
+                <img src="data:image/png;base64,{{ hist_graph }}" alt="Numerical Histogram" style="max-width: 100%; height: auto; border-radius: 6px; box-shadow: 0 1px 4px rgba(0,0,0,0.08);">
+            </div>
+        {% else %}
+            <p style="color: #888; font-style: italic;">No numerical columns available to plot histogram.</p>
+        {% endif %}
+    </div>
+
+    <!-- 3. Box Plot -->
+    <div style="background: white; border: 1px solid #e1e8ed; padding: 22px; border-radius: 8px; margin-bottom: 25px; box-shadow: 0 2px 6px rgba(0,0,0,0.04);">
+        <h2 style="margin-top: 0; color: #20577d; font-size: 19px; border-bottom: 2px solid #eef2f5; padding-bottom: 10px;">
+            3. Outlier Analysis (Box Plot)
+        </h2>
+        {% if box_plot %}
+            <div style="text-align: center; margin-top: 15px;">
+                <img src="data:image/png;base64,{{ box_plot }}" alt="Outlier Box Plot" style="max-width: 100%; height: auto; border-radius: 6px; box-shadow: 0 1px 4px rgba(0,0,0,0.08);">
+            </div>
+        {% else %}
+            <p style="color: #888; font-style: italic;">No numerical columns available to plot box plot.</p>
+        {% endif %}
+    </div>
+
+    <!-- 4. Bivariate Analysis -->
+    <div style="background: white; border: 1px solid #e1e8ed; padding: 22px; border-radius: 8px; margin-bottom: 25px; box-shadow: 0 2px 6px rgba(0,0,0,0.04);">
+        <h2 style="margin-top: 0; color: #20577d; font-size: 19px; border-bottom: 2px solid #eef2f5; padding-bottom: 10px;">
+            4. Academics &amp; Skills vs Placement Status (Bivariate Analysis)
+        </h2>
+        {% if bivariate_plot %}
+            <div style="text-align: center; margin-top: 15px;">
+                <img src="data:image/png;base64,{{ bivariate_plot }}" alt="Bivariate Analysis" style="max-width: 100%; height: auto; border-radius: 6px; box-shadow: 0 1px 4px rgba(0,0,0,0.08);">
+            </div>
+        {% else %}
+            <p style="color: #888; font-style: italic;">Requires 'placement_status', 'cgpa', and 'coding_skill_score' to render bivariate analysis.</p>
+        {% endif %}
+    </div>
+
+    <!-- 5. Correlation Heatmap -->
+    <div style="background: white; border: 1px solid #e1e8ed; padding: 22px; border-radius: 8px; margin-bottom: 25px; box-shadow: 0 2px 6px rgba(0,0,0,0.04);">
+        <h2 style="margin-top: 0; color: #20577d; font-size: 19px; border-bottom: 2px solid #eef2f5; padding-bottom: 10px;">
+            5. Multivariable Correlation Heatmap
+        </h2>
+        {% if heatmap_plot %}
+            <div style="text-align: center; margin-top: 15px;">
+                <img src="data:image/png;base64,{{ heatmap_plot }}" alt="Correlation Heatmap" style="max-width: 100%; height: auto; border-radius: 6px; box-shadow: 0 1px 4px rgba(0,0,0,0.08);">
+            </div>
+        {% else %}
+            <p style="color: #888; font-style: italic;">Requires numerical features to compute correlation matrix.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

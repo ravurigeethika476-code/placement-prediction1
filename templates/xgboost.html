@@ -1,0 +1,561 @@
+{% extends "base.html" %}
+
+
+{% block title %}
+
+XGBoost
+
+{% endblock %}
+
+
+{% block content %}
+
+
+<h1>XGBoost Classification</h1>
+
+
+<p>
+
+    <b>Dataset:</b>
+
+    {{ filename }}
+
+</p>
+
+
+<hr>
+
+<h2>1. Select Input Features (X)</h2>
+
+
+<form method="POST">
+
+
+    <p>
+
+        Select the input features:
+
+    </p>
+
+
+    {% for column in columns %}
+
+
+    <label>
+
+
+        <input
+            type="checkbox"
+            name="features"
+            value="{{ column }}"
+        >
+
+
+        {{ column }}
+
+
+    </label>
+
+
+    <br>
+
+
+    {% endfor %}
+
+
+    <br>
+
+    <h2>2. Select Target Column (Y)</h2>
+
+
+    <select
+        name="target"
+        required
+    >
+
+
+        <option value="">
+
+            -- Select Target --
+
+        </option>
+
+
+        {% for column in columns %}
+
+
+        <option value="{{ column }}">
+
+            {{ column }}
+
+        </option>
+
+
+        {% endfor %}
+
+
+    </select>
+
+
+    <br><br>
+
+
+    <button type="submit">
+
+        Train XGBoost
+
+    </button>
+
+
+</form>
+
+{% if error %}
+
+
+<hr>
+
+
+<p style="color:red;">
+
+    <b>Error:</b>
+
+    {{ error }}
+
+</p>
+
+
+{% endif %}
+
+
+{% if results %}
+
+
+<hr>
+
+
+<h2>XGBoost Results</h2>
+
+<h3>Selected Features</h3>
+
+
+<ul>
+
+
+{% for feature in results.features %}
+
+
+<li>
+
+    {{ feature }}
+
+</li>
+
+
+{% endfor %}
+
+
+</ul>
+
+
+<p>
+
+    <b>Target:</b>
+
+    {{ results.target }}
+
+</p>
+
+
+<hr>
+<h2>Dataset Information</h2>
+
+
+<table border="1" cellpadding="10">
+
+
+<tr>
+
+    <th>Total Samples</th>
+
+    <td>
+
+        {{ results.total_rows }}
+
+    </td>
+
+</tr>
+
+
+<tr>
+
+    <th>Training Samples</th>
+
+    <td>
+
+        {{ results.train_rows }}
+
+    </td>
+
+</tr>
+
+
+<tr>
+
+    <th>Testing Samples</th>
+
+    <td>
+
+        {{ results.test_rows }}
+
+    </td>
+
+</tr>
+
+
+</table>
+
+
+<hr>
+
+
+<h2>XGBoost Settings</h2>
+
+
+<table border="1" cellpadding="10">
+
+
+<tr>
+
+    <th>Parameter</th>
+
+    <th>Value</th>
+
+</tr>
+
+
+<tr>
+
+    <td>Number of Trees</td>
+
+    <td>
+
+        {{ results.n_estimators }}
+
+    </td>
+
+</tr>
+
+
+<tr>
+
+    <td>Learning Rate</td>
+
+    <td>
+
+        {{ results.learning_rate }}
+
+    </td>
+
+</tr>
+
+
+<tr>
+
+    <td>Maximum Depth</td>
+
+    <td>
+
+        {{ results.max_depth }}
+
+    </td>
+
+</tr>
+
+
+<tr>
+
+    <td>Minimum Child Weight</td>
+
+    <td>
+
+        {{ results.min_child_weight }}
+
+    </td>
+
+</tr>
+
+
+<tr>
+
+    <td>Subsample</td>
+
+    <td>
+
+        {{ results.subsample }}
+
+    </td>
+
+</tr>
+
+
+<tr>
+
+    <td>Column Sample by Tree</td>
+
+    <td>
+
+        {{ results.colsample_bytree }}
+
+    </td>
+
+</tr>
+
+
+</table>
+
+
+<hr>
+
+<h2>Feature Importance</h2>
+
+
+<table border="1" cellpadding="10">
+
+
+<tr>
+
+    <th>Feature</th>
+
+    <th>Importance</th>
+
+</tr>
+
+
+{% for item in results.feature_importance %}
+
+
+<tr>
+
+    <td>
+
+        {{ item.feature }}
+
+    </td>
+
+
+    <td>
+
+        {{ item.importance }}
+
+    </td>
+
+</tr>
+
+
+{% endfor %}
+
+
+</table>
+
+
+<hr>
+
+
+<h2>Model Evaluation Metrics</h2>
+
+
+<table border="1" cellpadding="10">
+
+
+<tr>
+
+    <th>Metric</th>
+
+    <th>Value</th>
+
+</tr>
+
+
+<tr>
+
+    <td>Accuracy</td>
+
+    <td>
+
+        {{ results.accuracy }}
+
+    </td>
+
+</tr>
+
+
+<tr>
+
+    <td>Precision</td>
+
+    <td>
+
+        {{ results.precision }}
+
+    </td>
+
+</tr>
+
+
+<tr>
+
+    <td>Recall</td>
+
+    <td>
+
+        {{ results.recall }}
+
+    </td>
+
+</tr>
+
+
+<tr>
+
+    <td>F1 Score</td>
+
+    <td>
+
+        {{ results.f1 }}
+
+    </td>
+
+</tr>
+
+
+</table>
+
+
+<hr>
+
+
+<h2>Confusion Matrix</h2>
+
+
+<table border="1" cellpadding="12">
+
+
+{% for row in results.confusion_matrix %}
+
+
+<tr>
+
+
+{% for value in row %}
+
+
+<td>
+
+    {{ value }}
+
+</td>
+
+
+{% endfor %}
+
+
+</tr>
+
+
+{% endfor %}
+
+
+</table>
+
+
+<hr>
+
+<h2>Classification Report</h2>
+
+
+<table border="1" cellpadding="10">
+
+
+<tr>
+
+    <th>Class</th>
+
+    <th>Precision</th>
+
+    <th>Recall</th>
+
+    <th>F1 Score</th>
+
+    <th>Support</th>
+
+</tr>
+
+
+{% for class_name, values in results.classification_report.items() %}
+
+
+{% if class_name not in [
+
+    'accuracy',
+
+    'macro avg',
+
+    'weighted avg'
+
+] %}
+
+
+<tr>
+
+
+<td>
+
+    {{ class_name }}
+
+</td>
+
+
+<td>
+
+    {{ values.precision | round(4) }}
+
+</td>
+
+
+<td>
+
+    {{ values.recall | round(4) }}
+
+</td>
+
+
+<td>
+
+    {{ values['f1-score'] | round(4) }}
+
+</td>
+
+
+<td>
+
+    {{ values.support }}
+
+</td>
+
+
+</tr>
+
+
+{% endif %}
+
+
+{% endfor %}
+
+
+</table>
+
+
+{% endif %}
+
+
+{% endblock %}

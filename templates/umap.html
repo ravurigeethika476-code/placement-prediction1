@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+
+{% block title %}
+UMAP Manifold Projection
+{% endblock %}
+
+{% block content %}
+
+<h1>Uniform Manifold Approximation &amp; Projection (UMAP)</h1>
+
+<p>
+    <b>Dataset:</b> {{ filename }}
+</p>
+
+<p style="color: #64748b; margin-bottom: 20px;">
+    UMAP leverages Riemannian geometry and algebraic topology to model student multidimensional data on a Riemannian manifold. Unlike t-SNE, UMAP preserves both <b>local affinities</b> and <b>global continuum</b> across career trajectories.
+</p>
+
+<hr>
+
+<h2>1. Configure UMAP Projection</h2>
+
+<form method="POST">
+    <div style="display: flex; gap: 30px; flex-wrap: wrap; margin-bottom: 25px;">
+        <div>
+            <label><b>n_neighbors (Local vs Global Balance):</b></label><br>
+            <select name="n_neighbors" style="padding: 8px 12px; border-radius: 6px; border: 1px solid #ccc; margin-top: 5px;">
+                <option value="15" {% if not n_neighbors or n_neighbors == 15 %}selected{% endif %}>15 (Local Clusters Focus)</option>
+                <option value="30" {% if n_neighbors == 30 %}selected{% endif %}>30 (Balanced Continuum)</option>
+                <option value="50" {% if n_neighbors == 50 %}selected{% endif %}>50 (Global Topology Focus)</option>
+            </select>
+        </div>
+
+        <div>
+            <label><b>min_dist (Clustering Density):</b></label><br>
+            <select name="min_dist" style="padding: 8px 12px; border-radius: 6px; border: 1px solid #ccc; margin-top: 5px;">
+                <option value="0.05">0.05 (Tightly Clustered)</option>
+                <option value="0.1" selected>0.1 (Balanced Distribution)</option>
+                <option value="0.25">0.25 (Evenly Spread)</option>
+            </select>
+        </div>
+
+        <div>
+            <label><b>Sample Size:</b></label><br>
+            <select name="sample_size" style="padding: 8px 12px; border-radius: 6px; border: 1px solid #ccc; margin-top: 5px;">
+                <option value="1000">1,000 Students (Fast)</option>
+                <option value="2000" selected>2,000 Students (Standard)</option>
+                <option value="3000">3,000 Students (Comprehensive)</option>
+            </select>
+        </div>
+
+        <div>
+            <label><b>Target Grouping:</b></label><br>
+            <select name="target" style="padding: 8px 12px; border-radius: 6px; border: 1px solid #ccc; margin-top: 5px;">
+                {% for col in columns %}
+                <option value="{{ col }}" {% if col == 'placement_status' %}selected{% endif %}>{{ col }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+
+    <button type="submit" style="padding: 10px 24px; background: #b5123f; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;">
+        Compute UMAP Manifold Projection
+    </button>
+</form>
+
+{% if error %}
+<hr>
+<div style="padding: 12px; background: #fee2e2; color: #b91c1c; border-radius: 6px; margin-top: 15px;">
+    <b>Error:</b> {{ error }}
+</div>
+{% endif %}
+
+{% if results %}
+<hr>
+
+<h2>UMAP Projection Results</h2>
+
+<!-- Metric Cards -->
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin: 20px 0;">
+    <div style="background: white; border: 1px solid #fecdd3; border-radius: 8px; padding: 15px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.04);">
+        <div style="color: #881337; font-size: 13px; font-weight: 600; text-transform: uppercase;">Sampled Students</div>
+        <div style="font-size: 26px; font-weight: bold; color: #b5123f; margin-top: 5px;">{{ results.sample_size }}</div>
+    </div>
+    <div style="background: white; border: 1px solid #fecdd3; border-radius: 8px; padding: 15px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.04);">
+        <div style="color: #881337; font-size: 13px; font-weight: 600; text-transform: uppercase;">n_neighbors</div>
+        <div style="font-size: 26px; font-weight: bold; color: #b5123f; margin-top: 5px;">{{ results.n_neighbors }}</div>
+    </div>
+    <div style="background: white; border: 1px solid #fecdd3; border-radius: 8px; padding: 15px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.04);">
+        <div style="color: #881337; font-size: 13px; font-weight: 600; text-transform: uppercase;">min_dist</div>
+        <div style="font-size: 26px; font-weight: bold; color: #b5123f; margin-top: 5px;">{{ results.min_dist }}</div>
+    </div>
+    <div style="background: white; border: 1px solid #fecdd3; border-radius: 8px; padding: 15px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.04);">
+        <div style="color: #881337; font-size: 13px; font-weight: 600; text-transform: uppercase;">Reduced Dimensions</div>
+        <div style="font-size: 26px; font-weight: bold; color: #421622; margin-top: 5px;">2D Embedding</div>
+    </div>
+</div>
+
+<!-- Visualizations -->
+{% if plot_base64 %}
+<div style="background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; margin-bottom: 25px; box-shadow: 0 2px 6px rgba(0,0,0,0.04);">
+    <h3 style="margin-top: 0; color: #421622;">2D UMAP Projection (Preserving Local &amp; Global Manifolds)</h3>
+    <div style="text-align: center;">
+        <img src="data:image/png;base64,{{ plot_base64 }}" alt="UMAP Scatter" style="max-width: 100%; height: auto; border-radius: 6px;">
+    </div>
+</div>
+{% endif %}
+
+<div style="background: #fff; border: 1px solid #f1f5f9; border-radius: 8px; padding: 20px;">
+    <h3 style="margin-top: 0; color: #421622;">UMAP Manifold Characteristics:</h3>
+    <p style="color: #475569; line-height: 1.6;">
+        Notice how UMAP uncovers continuous trajectories rather than isolated islands. Students with high aptitude, coding capability, and internship experience seamlessly form the placed continuum, showing the non-linear boundary separating placed and unplaced profiles.
+    </p>
+</div>
+
+{% endif %}
+
+{% endblock %}

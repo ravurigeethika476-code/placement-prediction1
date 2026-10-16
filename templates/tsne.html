@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+
+{% block title %}
+t-SNE Manifold Embedding
+{% endblock %}
+
+{% block content %}
+
+<h1>t-Distributed Stochastic Neighbor Embedding (t-SNE)</h1>
+
+<p>
+    <b>Dataset:</b> {{ filename }}
+</p>
+
+<p style="color: #64748b; margin-bottom: 20px;">
+    t-SNE is a state-of-the-art non-linear dimensionality reduction algorithm that maps high-dimensional student profiles into a 2D space by matching Gaussian probability distributions in high dimensions with Student-t distributions in low dimensions.
+</p>
+
+<hr>
+
+<h2>1. Configure t-SNE Embedding</h2>
+
+<form method="POST">
+    <div style="display: flex; gap: 30px; flex-wrap: wrap; margin-bottom: 25px;">
+        <div>
+            <label><b>Perplexity (Neighborhood Scale):</b></label><br>
+            <select name="perplexity" style="padding: 8px 12px; border-radius: 6px; border: 1px solid #ccc; margin-top: 5px;">
+                <option value="15" {% if perplexity == 15 %}selected{% endif %}>15 (Fine-grained Local Clusters)</option>
+                <option value="30" {% if not perplexity or perplexity == 30 %}selected{% endif %}>30 (Balanced - Default)</option>
+                <option value="50" {% if perplexity == 50 %}selected{% endif %}>50 (Broader Regional Clusters)</option>
+            </select>
+            <small style="display: block; color: #888; margin-top: 3px;">Controls effective number of local neighbors</small>
+        </div>
+
+        <div>
+            <label><b>Sample Size:</b></label><br>
+            <select name="sample_size" style="padding: 8px 12px; border-radius: 6px; border: 1px solid #ccc; margin-top: 5px;">
+                <option value="500">500 Students (Fastest)</option>
+                <option value="1000" selected>1,000 Students (Recommended)</option>
+                <option value="2000">2,000 Students (High Density)</option>
+            </select>
+        </div>
+
+        <div>
+            <label><b>Color By (Target):</b></label><br>
+            <select name="target" style="padding: 8px 12px; border-radius: 6px; border: 1px solid #ccc; margin-top: 5px;">
+                {% for col in columns %}
+                <option value="{{ col }}" {% if col == 'placement_status' %}selected{% endif %}>{{ col }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+
+    <button type="submit" style="padding: 10px 24px; background: #b5123f; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;">
+        Compute t-SNE 2D Embedding
+    </button>
+</form>
+
+{% if error %}
+<hr>
+<div style="padding: 12px; background: #fee2e2; color: #b91c1c; border-radius: 6px; margin-top: 15px;">
+    <b>Error:</b> {{ error }}
+</div>
+{% endif %}
+
+{% if results %}
+<hr>
+
+<h2>t-SNE Embedding Results</h2>
+
+<!-- Metric Cards -->
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin: 20px 0;">
+    <div style="background: white; border: 1px solid #fecdd3; border-radius: 8px; padding: 15px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.04);">
+        <div style="color: #881337; font-size: 13px; font-weight: 600; text-transform: uppercase;">Sampled Students</div>
+        <div style="font-size: 26px; font-weight: bold; color: #b5123f; margin-top: 5px;">{{ results.sample_size }}</div>
+    </div>
+    <div style="background: white; border: 1px solid #fecdd3; border-radius: 8px; padding: 15px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.04);">
+        <div style="color: #881337; font-size: 13px; font-weight: 600; text-transform: uppercase;">Perplexity Setting</div>
+        <div style="font-size: 26px; font-weight: bold; color: #b5123f; margin-top: 5px;">{{ results.perplexity }}</div>
+    </div>
+    {% if results.kl_divergence %}
+    <div style="background: white; border: 1px solid #fecdd3; border-radius: 8px; padding: 15px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.04);">
+        <div style="color: #881337; font-size: 13px; font-weight: 600; text-transform: uppercase;">KL Divergence</div>
+        <div style="font-size: 26px; font-weight: bold; color: #b5123f; margin-top: 5px;">{{ results.kl_divergence }}</div>
+    </div>
+    {% endif %}
+    <div style="background: white; border: 1px solid #fecdd3; border-radius: 8px; padding: 15px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.04);">
+        <div style="color: #881337; font-size: 13px; font-weight: 600; text-transform: uppercase;">Input Features</div>
+        <div style="font-size: 26px; font-weight: bold; color: #421622; margin-top: 5px;">{{ results.features|length }} Dimensions</div>
+    </div>
+</div>
+
+<!-- Visualizations -->
+{% if plot_base64 %}
+<div style="background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; margin-bottom: 25px; box-shadow: 0 2px 6px rgba(0,0,0,0.04);">
+    <h3 style="margin-top: 0; color: #421622;">2D Non-Linear Manifold Embedding (Colored by Placement Status)</h3>
+    <div style="text-align: center;">
+        <img src="data:image/png;base64,{{ plot_base64 }}" alt="t-SNE Scatter" style="max-width: 100%; height: auto; border-radius: 6px;">
+    </div>
+</div>
+{% endif %}
+
+<div style="background: #fff; border: 1px solid #f1f5f9; border-radius: 8px; padding: 20px;">
+    <h3 style="margin-top: 0; color: #421622;">Key Insights from t-SNE:</h3>
+    <p style="color: #475569; line-height: 1.6;">
+        Unlike linear PCA which maximizes global variance, t-SNE preserves local neighborhoods and affinities. Notice how students with matching skill-sets cluster together naturally, revealing whether placed students inhabit separable manifolds.
+    </p>
+</div>
+
+{% endif %}
+
+{% endblock %}

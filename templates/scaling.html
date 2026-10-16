@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container">
+
+    <h1>Feature Scaling</h1>
+
+    <p>
+        Scale numerical features using different methods.
+    </p>
+
+
+    {% if message %}
+
+    <div class="alert alert-success">
+        {{ message }}
+    </div>
+
+    {% endif %}
+
+
+    <form method="POST">
+
+        <label>
+            Select Scaling Method:
+        </label>
+
+        <br><br>
+
+        <select
+            name="method"
+            required
+        >
+
+            <option value="standard">
+                Standard Scaling
+            </option>
+
+            <option value="minmax">
+                Min-Max Scaling
+            </option>
+
+            <option value="normalize">
+                Normalization
+            </option>
+
+        </select>
+
+        <br><br>
+
+        <button type="submit">
+            Apply Scaling
+        </button>
+
+    </form>
+
+
+    {% if tables %}
+
+    <h3 style="margin-top:30px;">
+        Processed Data
+    </h3>
+
+    <div style="overflow-x:auto;">
+
+        {{ tables | safe }}
+
+    </div>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}

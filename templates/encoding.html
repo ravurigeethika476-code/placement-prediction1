@@ -1,0 +1,484 @@
+{% extends "base.html" %}
+
+{% block title %}Encoding - ML Placement{% endblock %}
+
+{% block content %}
+
+<h1>Categorical Data Encoding</h1>
+
+<p>
+    Convert categorical data into numerical values
+    for machine learning.
+</p>
+
+
+<!-- =====================================================
+     SUCCESS / ERROR MESSAGE
+===================================================== -->
+
+{% if message %}
+
+    {% if message_type == "error" %}
+
+        <div class="alert alert-error">
+            {{ message }}
+        </div>
+
+    {% else %}
+
+        <div class="alert alert-success">
+            {{ message }}
+        </div>
+
+    {% endif %}
+
+{% endif %}
+
+
+<!-- =====================================================
+     ENCODING FORM
+===================================================== -->
+
+{% if columns %}
+
+<div class="card">
+
+    <h3>Apply Encoding</h3>
+
+    <form method="POST">
+
+        <!-- COLUMN -->
+
+        <label for="column">
+            Select Categorical Column:
+        </label>
+
+        <br>
+
+        <select
+            name="column"
+            id="column"
+            required
+        >
+
+            {% for column in columns %}
+
+                <option value="{{ column }}">
+                    {{ column }}
+                </option>
+
+            {% endfor %}
+
+        </select>
+
+        <br><br>
+
+
+        <!-- METHOD -->
+
+        <label for="method">
+            Select Encoding Method:
+        </label>
+
+        <br>
+
+        <select
+            name="method"
+            id="method"
+            required
+        >
+
+            <option value="label">
+                Label Encoding
+            </option>
+
+            <option value="onehot">
+                One-Hot Encoding
+            </option>
+
+        </select>
+
+        <br><br>
+
+
+        <button type="submit">
+            Apply Encoding
+        </button>
+
+    </form>
+
+</div>
+
+{% else %}
+
+<div class="alert alert-info">
+
+    No categorical columns are currently available
+    for encoding.
+
+</div>
+
+{% endif %}
+
+
+
+<!-- =====================================================
+     ENCODING DETAILS
+===================================================== -->
+
+{% if encoded_column %}
+
+<div class="card">
+
+    <h3>
+        Encoding Details
+    </h3>
+
+
+    <table class="table table-bordered">
+
+        <tr>
+
+            <th>
+                Column Encoded
+            </th>
+
+            <td>
+                {{ encoded_column }}
+            </td>
+
+        </tr>
+
+
+        <tr>
+
+            <th>
+                Encoding Method
+            </th>
+
+            <td>
+                {{ encoding_method }}
+            </td>
+
+        </tr>
+
+    </table>
+
+</div>
+
+{% endif %}
+
+
+
+<!-- =====================================================
+     LABEL ENCODING MAPPING
+===================================================== -->
+
+{% if encoding_method == "Label Encoding" %}
+
+<div class="card">
+
+    <h3>
+        Label Encoding Mapping
+    </h3>
+
+    <p>
+        Each categorical value has been converted
+        into a numerical value.
+    </p>
+
+
+    {% if encoding_mapping %}
+
+    <table class="table table-bordered">
+
+        <thead>
+
+            <tr>
+
+                <th>
+                    Original Value
+                </th>
+
+                <th>
+                    Encoded Value
+                </th>
+
+            </tr>
+
+        </thead>
+
+
+        <tbody>
+
+            {% for category, value in encoding_mapping.items() %}
+
+            <tr>
+
+                <td>
+                    {{ category }}
+                </td>
+
+                <td>
+                    <strong>
+                        {{ value }}
+                    </strong>
+                </td>
+
+            </tr>
+
+            {% endfor %}
+
+        </tbody>
+
+    </table>
+
+    {% endif %}
+
+</div>
+
+{% endif %}
+
+
+
+<!-- =====================================================
+     ONE-HOT ENCODING
+===================================================== -->
+
+{% if encoding_method == "One-Hot Encoding" %}
+
+<div class="card">
+
+    <h3>
+        One-Hot Encoding
+    </h3>
+
+    <p>
+        The selected categorical column was converted
+        into separate numerical columns.
+    </p>
+
+
+    {% if new_columns %}
+
+    <h4>
+        New Columns Created:
+    </h4>
+
+
+    <table class="table table-bordered">
+
+        <thead>
+
+            <tr>
+
+                <th>
+                    New Encoded Column
+                </th>
+
+            </tr>
+
+        </thead>
+
+
+        <tbody>
+
+            {% for column in new_columns %}
+
+            <tr>
+
+                <td>
+                    {{ column }}
+                </td>
+
+            </tr>
+
+            {% endfor %}
+
+        </tbody>
+
+    </table>
+
+    {% endif %}
+
+</div>
+
+{% endif %}
+
+
+
+<!-- =====================================================
+     BEFORE DATA
+===================================================== -->
+
+{% if before_preview %}
+
+<div class="card">
+
+    <h3>
+        Before Encoding
+    </h3>
+
+    <p>
+        Original values from the selected column:
+    </p>
+
+
+    <div style="overflow-x:auto;">
+
+        {{ before_preview | safe }}
+
+    </div>
+
+</div>
+
+{% endif %}
+
+
+
+<!-- =====================================================
+     AFTER DATA
+===================================================== -->
+
+{% if after_preview %}
+
+<div class="card">
+
+    <h3>
+        After Encoding
+    </h3>
+
+    {% if encoding_method == "Label Encoding" %}
+
+        <p>
+            The selected column now contains
+            numerical values.
+        </p>
+
+    {% elif encoding_method == "One-Hot Encoding" %}
+
+        <p>
+            The selected categorical column has been
+            replaced by the new numerical columns.
+        </p>
+
+    {% endif %}
+
+
+    <div style="overflow-x:auto;">
+
+        {{ after_preview | safe }}
+
+    </div>
+
+</div>
+
+{% endif %}
+
+
+
+<!-- =====================================================
+     COMPLETE DATASET
+===================================================== -->
+
+{% if table %}
+
+<div class="card">
+
+    <h3>
+        Updated Dataset
+    </h3>
+
+    <p>
+        This is the first 10 rows of your complete
+        dataset after applying encoding.
+    </p>
+
+
+    <div style="overflow-x:auto;">
+
+        {{ table | safe }}
+
+    </div>
+
+</div>
+
+{% endif %}
+
+
+
+<!-- =====================================================
+     REMAINING CATEGORICAL COLUMNS
+===================================================== -->
+
+{% if columns %}
+
+<div class="card">
+
+    <h3>
+        Remaining Categorical Columns
+    </h3>
+
+    <p>
+        These columns still need to be encoded:
+    </p>
+
+
+    <ul>
+
+        {% for column in columns %}
+
+        <li>
+            {{ column }}
+        </li>
+
+        {% endfor %}
+
+    </ul>
+
+</div>
+
+{% endif %}
+
+
+
+<!-- =====================================================
+     ENCODING COMPLETE
+===================================================== -->
+
+{% if encoding_complete %}
+
+<div class="card">
+
+    <h3>
+        Encoding Completed ✓
+    </h3>
+
+    <p>
+        All categorical columns in the dataset
+        have been converted into numerical values.
+    </p>
+
+
+    <p>
+        Your dataset is now ready for
+        <strong>
+            Scaling &amp; Normalization
+        </strong>.
+    </p>
+
+
+    <a
+        href="{{ url_for('scaling') }}"
+        class="continue-link"
+    >
+
+        Continue to Scaling →
+
+    </a>
+
+</div>
+
+{% endif %}
+
+{% endblock %}

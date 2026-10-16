@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+
+{% block title %}
+Predict Student Placement
+{% endblock %}
+
+{% block content %}
+<div class="container placement-page-container">
+    <div class="placement-header-hero">
+        <div class="placement-hero-badge">Real-Time Inference</div>
+        <h1>Predict Student Placement</h1>
+        <p class="placement-hero-sub">Enter student metrics to predict placement outcome using the trained Random Forest pipeline.</p>
+    </div>
+
+    {% if error %}
+        <div class="alert alert-danger">{{ error }}</div>
+    {% endif %}
+
+    <div style="display: flex; justify-content: flex-end; margin-bottom: 10px;">
+        <button type="button" class="btn-sample-fill" onclick="fillSampleData()">
+            ⚡ Auto-Fill Sample Student Profile
+        </button>
+    </div>
+
+    <form method="post" class="placement-form">
+        {% for feature in artifact.features %}
+            <div class="form-group">
+                <label for="field_{{ feature }}">{{ feature|replace('_', ' ') }}</label>
+                {% if feature in artifact.categorical_features %}
+                    <input id="field_{{ feature }}" 
+                           type="text" 
+                           name="{{ feature }}" 
+                           list="list_{{ feature }}" 
+                           placeholder="Select or enter {{ feature|replace('_', ' ') }}" 
+                           required>
+                    
+                    {% if feature == "gender" %}
+                        <datalist id="list_gender">
+                            <option value="Male">
+                            <option value="Female">
+                        </datalist>
+                    {% elif feature == "branch" %}
+                        <datalist id="list_branch">
+                            <option value="CSE">
+                            <option value="IT">
+                            <option value="ECE">
+                            <option value="EEE">
+                            <option value="Mechanical">
+                            <option value="Civil">
+                        </datalist>
+                    {% elif feature == "college_tier" %}
+                        <datalist id="list_college_tier">
+                            <option value="Tier 1">
+                            <option value="Tier 2">
+                            <option value="Tier 3">
+                        </datalist>
+                    {% elif feature == "volunteer_experience" %}
+                        <datalist id="list_volunteer_experience">
+                            <option value="Yes">
+                            <option value="No">
+                        </datalist>
+                    {% endif %}
+                {% else %}
+                    <input id="field_{{ feature }}" 
+                           type="number" 
+                           step="any" 
+                           name="{{ feature }}" 
+                           placeholder="Enter {{ feature|replace('_', ' ') }}" 
+                           required>
+                {% endif %}
+            </div>
+        {% endfor %}
+
+        <div style="grid-column: 1 / -1; display: flex; gap: 15px; margin-top: 15px; flex-wrap: wrap;">
+            <button type="submit" style="flex: 1; min-width: 200px;">Predict Placement</button>
+            <button type="reset" class="btn-drift-calc secondary" style="padding: 12px 24px; min-width: 140px;">Reset Form</button>
+        </div>
+    </form>
+</div>
+
+<script>
+function fillSampleData() {
+    const sampleValues = {
+        'age': 21,
+        'gender': 'Male',
+        'cgpa': 8.25,
+        'branch': 'CSE',
+        'college_tier': 'Tier 1',
+        'internships_count': 2,
+        'projects_count': 4,
+        'certifications_count': 3,
+        'coding_skill_score': 82.5,
+        'aptitude_score': 78.0,
+        'communication_skill_score': 80.0,
+        'logical_reasoning_score': 76.5,
+        'hackathons_participated': 2,
+        'github_repos': 8,
+        'linkedin_connections': 420,
+        'mock_interview_score': 84.0,
+        'attendance_percentage': 89.5,
+        'backlogs': 0,
+        'extracurricular_score': 72.0,
+        'leadership_score': 68.0,
+        'volunteer_experience': 'Yes',
+        'sleep_hours': 7.0,
+        'study_hours_per_day': 4.5
+    };
+
+    for (const [key, val] of Object.entries(sampleValues)) {
+        const input = document.querySelector(`[name="${key}"]`);
+        if (input) {
+            input.value = val;
+            input.style.backgroundColor = '#fff8fa';
+        }
+    }
+}
+</script>
+{% endblock %}

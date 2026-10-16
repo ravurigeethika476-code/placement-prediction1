@@ -1,21 +1,43 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
+
     <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
 
     <link rel="stylesheet"
           href="{{ url_for('static', filename='css/style.css') }}">
 
-    <title>{% block title %}ML Placement{% endblock %}</title>
+    <title>
+        {% block title %}ML Placement{% endblock %}
+    </title>
+
 </head>
+
 
 <body>
 
 <div class="wrapper">
 
-    <!-- Left Menu -->
+
+    <!-- =========================================
+         LEFT MENU
+    ========================================== -->
+
     <aside class="sidebar">
-        <h2>ML Pipeline</h2>
+
+
+        <h2>
+            ML Pipeline
+        </h2>
+
+
+        <!-- =====================================
+             HOME
+        ====================================== -->
 
         <a href="{{ url_for('home') }}">
             HOME
@@ -23,23 +45,175 @@
 
         <br>
 
+
+        <!-- =====================================
+             UPLOAD DATA
+        ====================================== -->
+
         <a href="{{ url_for('upload') }}">
             UPLOAD DATA
         </a>
+
         <br>
-        <a href="{{ url_for('eda') }}">
-            <i class="bi bi-house"></i>
-            Visuilize data
+
+
+        <!-- =====================================
+             SUMMARY
+        ====================================== -->
+
+        <a href="{{ url_for('summary') }}">
+            SUMMARY
         </a>
+
+        <br>
+
+
+        <!-- =====================================
+             MISSING VALUES
+        ====================================== -->
+
+        <a href="{{ url_for('missing_values') }}">
+            MISSING VALUES
+        </a>
+
+        <br>
+
+
+        <!-- =====================================
+             ENCODING
+        ====================================== -->
+
+        <a href="{{ url_for('encoding') }}">
+            ENCODING
+        </a>
+
+        <br>
+
+
+        <!-- =====================================
+             VISUALIZATION
+        ====================================== -->
+
+        <a href="{{ url_for('eda') }}">
+            VISUALIZE DATA
+        </a>
+
+        <br>
+
+
+        <!-- =====================================
+             SCALING
+        ====================================== -->
+
+        <a href="{{ url_for('scaling') }}">
+            SCALING &amp; NORMALIZATION
+        </a>
+
+        <br>
+
+
+        <!-- =====================================
+             LINEAR REGRESSION
+        ====================================== -->
+
+        <a href="{{ url_for('linear_regression') }}">
+            LINEAR REGRESSION
+        </a>
+
+        <br>
+
+        <!-- =====================================
+             LOGISTIC REGRESSION
+        ====================================== -->
+
+        <a href="{{ url_for('logistic_regression') }}">
+            LOGISTIC REGRESSION
+        </a>
+
+        <br>
+
+        <!-- DECISION TREE -->
+
+<a href="{{ url_for('decision_tree') }}">
+    DECISION TREE
+</a>
+        <br>
+
+
+        <a href="{{ url_for('random_forest') }}">
+            RANDOM FOREST
+        </a>
+
+        <a href="{{ url_for('random_forest_curves') }}">
+            RF DIAGNOSTIC CURVES
+        </a>
+
+        <a href="{{ url_for('xgboost') }}">
+            XGBOOST
+        </a>
+
+        <a href="{{ url_for('sgboost') }}">
+            SGBOOST (STOCHASTIC)
+        </a>
+
+        <a href="{{ url_for('k_means_page') }}">
+            K-MEANS CLUSTERING
+        </a>
+
+        <a href="{{ url_for('pca') }}">
+            PCA REDUCTION
+        </a>
+
+        <a href="{{ url_for('tsne') }}">
+            t-SNE EMBEDDING
+        </a>
+
+        <a href="{{ url_for('umap') }}">
+            UMAP MANIFOLD
+        </a>
+
+        <!-- =====================================
+             MLOPS & MONITORING
+        ====================================== -->
+        <br>
+        <div style="font-weight: 700; font-size: 13px; color: #ffccd5; letter-spacing: 1px; padding: 12px 10px 6px; border-top: 1px solid rgba(255,255,255,0.25); text-transform: uppercase;">
+            MLOps &amp; Monitoring
+        </div>
+
+        <a href="{{ url_for('placement.index') }}">
+            MLOPS DASHBOARD
+        </a>
+
+        <a href="{{ url_for('placement.predict') }}">
+            PREDICT PLACEMENT
+        </a>
+
+        <a href="{{ url_for('placement.monitoring') }}">
+            DRIFT MONITORING
+        </a>
+
+        <a href="{{ url_for('placement.model_info') }}">
+            MODEL INFORMATION
+        </a>
+
     </aside>
 
-    <!-- Right Content -->
+
+    <!-- =========================================
+         RIGHT CONTENT
+    ========================================== -->
+
     <main class="content">
+
         {% block content %}
+
         {% endblock %}
+
     </main>
+
 
 </div>
 
 </body>
+
 </html>

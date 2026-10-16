@@ -1,0 +1,178 @@
+{% extends "base.html" %}
+
+{% block title %}
+Data Drift Monitoring
+{% endblock %}
+
+{% block content %}
+<div class="container placement-page-container">
+    <div class="placement-header-hero">
+        <div class="placement-hero-badge">MLOps Audit &amp; Governance</div>
+        <h1>Placement Data Drift Monitoring</h1>
+        <p class="placement-hero-sub">Upload current student data to compare it with the training reference population using Population Stability Index (PSI).</p>
+    </div>
+
+    {% if error %}
+        <div class="alert alert-danger">{{ error }}</div>
+    {% endif %}
+
+    <!-- Drift Upload & Audit Section -->
+    <div class="drift-action-card">
+        <h3 style="margin-top: 0; color: #7d0d2d; font-size: 20px;">1. Select Data Source to Audit</h3>
+        <p style="color: #6d414e; font-size: 14px; margin-bottom: 20px;">
+            The drift engine calculates PSI across both continuous metrics (CGPA, scores, internships) and categorical factors (gender, branch, tier) against the 15,000 student training baseline.
+        </p>
+
+        <div class="drift-options-grid">
+            <!-- Option A: File Upload -->
+            <div class="drift-option-box">
+                <h4 style="color: #7d0d2d; margin-top: 0; margin-bottom: 10px;">Upload New Student Batch</h4>
+                <p style="font-size: 13px; color: #6d414e; margin-bottom: 15px;">Upload a fresh .csv or Excel file of candidate student records.</p>
+                
+                <form method="post" enctype="multipart/form-data" class="placement-form drift-form-styled">
+                    <div class="form-group" style="width: 100%;">
+                        <label for="current_data_input">Choose Dataset File:</label>
+                        <input id="current_data_input" type="file" name="current_data" accept=".csv,.xlsx,.xls" required>
+                    </div>
+                    <button type="submit" class="btn-drift-calc">Calculate Drift</button>
+                </form>
+            </div>
+
+            <!-- Option B: Audit Active Project Dataset -->
+            <div class="drift-option-box">
+                <h4 style="color: #7d0d2d; margin-top: 0; margin-bottom: 10px;">Audit Active Dataset</h4>
+                <p style="font-size: 13px; color: #6d414e; margin-bottom: 15px;">Run PSI drift check directly against the currently loaded project dataset.</p>
+                
+                <form method="post" class="drift-form-styled">
+                    <input type="hidden" name="use_active" value="1">
+                    <div style="padding: 12px 14px; background: #fff5f7; border: 1px dashed #ffd6de; border-radius: 8px; margin-bottom: 15px; font-size: 13px; color: #7d0d2d;">
+                        📁 <strong>Target:</strong> student_placement_prediction_dataset_2026.csv
+                    </div>
+                    <button type="submit" class="btn-drift-calc secondary">Audit Active Dataset</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Drift Results Section -->
+    {% if report is not none %}
+        <div class="drift-results-card">
+            <div class="results-header-flex">
+                <div>
+                    <h2 style="margin: 0 0 5px 0; color: #7d0d2d; font-size: 24px;">Drift Analysis Results</h2>
+                    {% if stats and stats.source_file %}
+                        <p style="margin: 0; font-size: 13px; color: #6d414e;">Audited Dataset Source: <b>{{ stats.source_file }}</b></p>
+                    {% endif %}
+                </div>
+                {% if stats %}
+                    <div>
+                        <span class="drift-status-pill {{ stats.summary_class }}">
+                            {{ stats.summary }}
+                        </span>
+                    </div>
+                {% endif %}
+            </div>
+
+            {% if stats %}
+            <!-- Summary KPI Badges -->
+            <div class="drift-kpi-summary">
+                <div class="drift-mini-stat total">
+                    <span class="stat-number">{{ stats.total_count }}</span>
+                    <span class="stat-title">Features Evaluated</span>
+                </div>
+                <div class="drift-mini-stat low">
+                    <span class="stat-number">{{ stats.low_count }}</span>
+                    <span class="stat-title">Low Shift (Stable)</span>
+                </div>
+                <div class="drift-mini-stat moderate">
+                    <span class="stat-number">{{ stats.mod_count }}</span>
+                    <span class="stat-title">Moderate Shift</span>
+                </div>
+                <div class="drift-mini-stat high">
+                    <span class="stat-number">{{ stats.high_count }}</span>
+                    <span class="stat-title">High Shift (Investigate)</span>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Main Drift PSI Table -->
+            <div class="table-responsive">
+                <table class="placement-table">
+                    <thead>
+                        <tr>
+                            <th>Feature</th>
+                            <th>Type</th>
+                            <th>Reference Baseline</th>
+                            <th>Current Audited</th>
+                            <th>PSI Metric</th>
+                            <th>Shift Magnitude</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in report.to_dict("records") %}
+                        <tr class="drift-row-{{ row.drift_level }}">
+                            <td class="col-feature-name">
+                                <strong>{{ row.feature }}</strong>
+                            </td>
+                            <td>
+                                <span class="tag-type tag-{{ row.feature_type|lower }}">{{ row.feature_type }}</span>
+                            </td>
+                            <td style="color: #64748b; font-size: 13px;">{{ row.ref_baseline }}</td>
+                            <td style="color: #421622; font-size: 13px; font-weight: 500;">{{ row.cur_value }}</td>
+                            <td class="col-psi-value">
+                                {% if row.psi is not none %}
+                                    <code>{{ "%.4f"|format(row.psi) }}</code>
+                                {% else %}
+                                    <span style="color: #94a3b8;">N/A</span>
+                                {% endif %}
+                            </td>
+                            <td style="min-width: 130px;">
+                                <div class="psi-meter-bar">
+                                    <div class="psi-fill psi-fill-{{ row.drift_level }}" style="width: {{ row.bar_width }}%;"></div>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="badge-status badge-{{ row.drift_level }}">
+                                    {{ row.status }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- PSI Interpretation Legend & Guidance -->
+            <div class="psi-guidance-box">
+                <h4>Population Stability Index (PSI) Threshold Interpretation</h4>
+                <div class="psi-threshold-grid">
+                    <div class="threshold-item">
+                        <span class="badge-status badge-low">PSI &lt; 0.10</span>
+                        <strong>Low Shift:</strong> Distribution has not changed significantly. Model predictions remain reliable and calibrated.
+                    </div>
+                    <div class="threshold-item">
+                        <span class="badge-status badge-moderate">0.10 &le; PSI &lt; 0.25</span>
+                        <strong>Moderate Shift:</strong> Slight population divergence detected. Increase audit frequency and observe feature correlations.
+                    </div>
+                    <div class="threshold-item">
+                        <span class="badge-status badge-high">PSI &ge; 0.25</span>
+                        <strong>High Shift:</strong> Substantial feature drift identified. Feature distribution differs significantly from training baseline. Model retraining recommended.
+                    </div>
+                </div>
+                <p style="margin: 15px 0 0 0; font-size: 13px; color: #725d64; border-top: 1px solid #ffd6de; padding-top: 12px;">
+                    PSI is a monitoring signal and should be interpreted together with data quality and model performance.
+                </p>
+            </div>
+
+            {% if stats and stats.high_count > 0 %}
+                <div style="margin-top: 20px; text-align: right;">
+                    <a href="{{ url_for('placement.model_info') }}" class="btn-drift-calc" style="text-decoration: none; display: inline-block;">
+                        Proceed to Retrain Model &rarr;
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
